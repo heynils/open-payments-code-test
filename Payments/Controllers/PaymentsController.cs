@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Payments.Controllers;
@@ -75,17 +76,26 @@ public class PaymentsController : ControllerBase
 
     private IActionResult? ValidateRequest(PaymentRequest request)
     {
-        if (string.IsNullOrEmpty(request.DebtorAccount) || request.DebtorAccount.Length > 34)
-            return BadRequest("Invalid Debtor Account");
+        // IBAN Validation
+        const string ibanPattern = @"^[A-Za-z0-9]{1,34}$";
+        if (string.IsNullOrEmpty(request.DebtorAccount) || !Regex.IsMatch(request.DebtorAccount, ibanPattern))
+            return BadRequest("Debtor Account IBAN must be 1-34 alphanumeric characters");
 
-        if (string.IsNullOrEmpty(request.CreditorAccount) || request.CreditorAccount.Length > 34)
-            return BadRequest("Invalid Creditor Account");
+        if (string.IsNullOrEmpty(request.CreditorAccount) || !Regex.IsMatch(request.CreditorAccount, ibanPattern))
+            return BadRequest("Creditor Account IBAN must be 1-34 alphanumeric characters");
 
-        if (string.IsNullOrEmpty(request.Currency) || request.Currency.Length != 3)
-            return BadRequest("Invalid Currency");
+        // ISO 4217 Alpha 3 Validation
+        const string currencyPattern = @"^[A-Z]{3}$";
+        if (string.IsNullOrEmpty(request.Currency) || !Regex.IsMatch(request.Currency, currencyPattern))
+            return BadRequest("Currency must be a 3-letter ISO 4217 code (e.g., USD, EUR)");
 
-        if (request.InstructedAmount % 0.001m != 0)
-            return BadRequest("Invalid Amount format");
+
+        const string amountPattern = @"^-?[0-9]{1,14}(\.[0-9]{1,3})?$";
+        if (string.IsNullOrEmpty(request.InstructedAmount) || 
+            !Regex.IsMatch(request.InstructedAmount, amountPattern))
+        {
+            return BadRequest("Instructed Amount must match pattern -?[0-9]{1,14}(.[0-9]{1,3})?");
+        }
 
         return null;
     }

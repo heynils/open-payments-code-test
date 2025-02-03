@@ -1,14 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-
-// DTO
-public class PaymentRequest
+public record PaymentRequest
 {
-    [Required, MaxLength(34)]
     public required string DebtorAccount { get; set; }
-    [Required, MaxLength(34)]
     public required string CreditorAccount { get; set; }
-    [Required]
-    public required decimal InstructedAmount { get; set; }
-    [Required]
+    public required string InstructedAmount { get; set; }
     public required string Currency { get; set; }
 }

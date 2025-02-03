@@ -1,14 +1,10 @@
 public class PaymentTransaction
 {
     public required Guid PaymentId { get; set; }
-    // regex?
     public required string DebtorAccount { get; set; } 
-    // regex?
     public required string CreditorAccount { get; set; } 
-    // regex?
-    public required decimal InstructedAmount { get; set; } 
-    // ISO domain object for currency?
+    public required string InstructedAmount { get; set; } 
     public required string Currency { get; set; }
-    public DateTime InitiatedAt { get; set; }
+    public required DateTime InitiatedAt { get; set; }
     public bool IsCompleted => DateTime.UtcNow >= InitiatedAt.AddSeconds(2);
 }
