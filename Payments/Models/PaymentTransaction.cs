@@ -1,4 +1,4 @@
-public class Payment
+public class PaymentTransaction
 {
     public required Guid PaymentId { get; set; }
     // regex?

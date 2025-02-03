@@ -8,7 +8,7 @@ public class PaymentsController : ControllerBase
 {
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> _clientLocks = new();
     private static readonly ConcurrentDictionary<string, DateTime> _processingClients = new();
-    private static readonly ConcurrentBag<Payment> _completedTransactions = new();
+    private static readonly ConcurrentBag<PaymentTransaction> _completedTransactions = new();
 
     [HttpPost("/payments")]
     public async Task<IActionResult> InitiatePayment([FromHeader(Name = "Client-ID")] string clientId, [FromBody] PaymentRequest request)
@@ -35,7 +35,7 @@ public class PaymentsController : ControllerBase
             {
                 await Task.Delay(TimeSpan.FromSeconds(2));
                 _processingClients.TryRemove(clientId, out _);
-                _completedTransactions.Add(new Payment
+                _completedTransactions.Add(new PaymentTransaction
                 {
                     PaymentId = paymentId,
                     DebtorAccount = request.DebtorAccount,
