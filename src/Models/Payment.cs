@@ -1,9 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-
 public class Payment
 {
-    [Key]
-    public Guid PaymentId { get; set; } = Guid.NewGuid();
+    public Guid PaymentId { get; }
     // regex?
     public required string DebtorAccount { get; set; } 
     // regex?
@@ -12,6 +9,6 @@ public class Payment
     public required decimal InstructedAmount { get; set; } 
     // ISO domain object for currency?
     public required string Currency { get; set; }
-    public DateTime InitiatedAt { get; set; } = DateTime.UtcNow;
-    public bool IsCompleted { get; set; } = false;
+    public DateTime InitiatedAt { get; set; }
+    public bool IsCompleted => DateTime.UtcNow >= InitiatedAt.AddSeconds(2);
 }
