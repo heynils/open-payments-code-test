@@ -27,7 +27,7 @@ public class PaymentsController : ControllerBase
         try
         {
             if (_processingClients.TryGetValue(clientId, out var startTime) && (DateTime.UtcNow - startTime).TotalSeconds < 2)
-                return Conflict("A payment is already in process for this client");
+                return Conflict("A payment is already in process for this client.");
 
             var paymentId = Guid.NewGuid();
             _processingClients[clientId] = DateTime.UtcNow;
