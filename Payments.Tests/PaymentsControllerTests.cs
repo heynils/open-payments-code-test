@@ -21,7 +21,7 @@ public class PaymentsControllerTests : IClassFixture<WebApplicationFactory<Progr
         {
             DebtorAccount = "DE0123456789",
             CreditorAccount = "SE0123456789",
-            InstructedAmount= 100.50m,
+            InstructedAmount= "100.50",
             Currency = "EUR"
         };
 
@@ -42,7 +42,47 @@ public class PaymentsControllerTests : IClassFixture<WebApplicationFactory<Progr
         {
             DebtorAccount = "DE0123456789",
             CreditorAccount = "SE0123456789",
-            InstructedAmount= 100.50m,
+            InstructedAmount= "100.50",
+            Currency = "EUR"
+        };
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/payments")
+        {
+            Content = JsonContent.Create(request)
+        };
+
+        var response = await _client.SendAsync(httpRequest);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task InitiatePayment_InvalidIban_ReturnsBadRequest()
+    {
+        var request = new PaymentRequest
+        {
+            DebtorAccount = "@DE0123456789",
+            CreditorAccount = "SE0123456789",
+            InstructedAmount= "100.50",
+            Currency = "EUR"
+        };
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/payments")
+        {
+            Content = JsonContent.Create(request)
+        };
+
+        var response = await _client.SendAsync(httpRequest);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task InitiatePayment_InvalidAmount_ReturnsBadRequest()
+    {
+        var request = new PaymentRequest
+        {
+            DebtorAccount = "DE0123456789",
+            CreditorAccount = "SE0123456789",
+            InstructedAmount= "100.",
             Currency = "EUR"
         };
 
@@ -62,7 +102,7 @@ public class PaymentsControllerTests : IClassFixture<WebApplicationFactory<Progr
         {
             DebtorAccount = "DE0123456789",
             CreditorAccount = "SE0123456789",
-            InstructedAmount= 100.50m,
+            InstructedAmount= "100.50",
             Currency = "EUR"
         };
 
