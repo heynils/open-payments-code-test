@@ -4,14 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace Payments.Controllers;
 
 [ApiController]
-[Route("/payments")]
 public class PaymentsController : ControllerBase
 {
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> _clientLocks = new();
     private static readonly ConcurrentDictionary<string, DateTime> _processingClients = new();
     private static readonly ConcurrentBag<Payment> _completedTransactions = new();
 
-    [HttpPost]
+    [HttpPost("/payments")]
     public async Task<IActionResult> InitiatePayment([FromHeader(Name = "Client-ID")] string clientId, [FromBody] PaymentRequest request)
     {
         if (string.IsNullOrEmpty(clientId))
@@ -26,7 +25,6 @@ public class PaymentsController : ControllerBase
         {
             if (_processingClients.TryGetValue(clientId, out var startTime) && (DateTime.UtcNow - startTime).TotalSeconds < 2)
             {
-                System.Console.WriteLine("A payment is already in process for this client");
                 return Conflict("A payment is already in process for this client");
             }
 
