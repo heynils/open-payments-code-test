@@ -14,9 +14,11 @@ public class PaymentsController : ControllerBase
     public async Task<IActionResult> InitiatePayment([FromHeader(Name = "Client-ID")] string clientId, [FromBody] PaymentRequest request)
     {
         if (string.IsNullOrEmpty(clientId))
-        {
             return BadRequest("Client-ID header is required.");
-        }
+
+        var validationResult = ValidateRequest(request);
+        if (validationResult != null)
+            return validationResult;
 
         var clientLock = _clientLocks.GetOrAdd(clientId, _ => new SemaphoreSlim(1, 1));
         await clientLock.WaitAsync();
@@ -24,9 +26,7 @@ public class PaymentsController : ControllerBase
         try
         {
             if (_processingClients.TryGetValue(clientId, out var startTime) && (DateTime.UtcNow - startTime).TotalSeconds < 2)
-            {
                 return Conflict("A payment is already in process for this client");
-            }
 
             var paymentId = Guid.NewGuid();
             _processingClients[clientId] = DateTime.UtcNow;
@@ -70,5 +70,23 @@ public class PaymentsController : ControllerBase
             .ToList();
 
         return transactions.Count > 0 ? Ok(transactions) : NoContent();
+    }
+
+
+    private IActionResult? ValidateRequest(PaymentRequest request)
+    {
+        if (string.IsNullOrEmpty(request.DebtorAccount) || request.DebtorAccount.Length > 34)
+            return BadRequest("Invalid Debtor Account");
+
+        if (string.IsNullOrEmpty(request.CreditorAccount) || request.CreditorAccount.Length > 34)
+            return BadRequest("Invalid Creditor Account");
+
+        if (string.IsNullOrEmpty(request.Currency) || request.Currency.Length != 3)
+            return BadRequest("Invalid Currency");
+
+        if (request.InstructedAmount % 0.001m != 0)
+            return BadRequest("Invalid Amount format");
+
+        return null;
     }
 }
