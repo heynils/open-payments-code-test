@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-        <ProjectReference Include="..\src\Payments.csproj" />
+        <ProjectReference Include="..\Payments\Payments.csproj" />
   </ItemGroup>
 
 </Project>

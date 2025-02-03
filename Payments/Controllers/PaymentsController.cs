@@ -56,4 +56,21 @@ public class PaymentsController : ControllerBase
             clientLock.Release();
         }
     }
+
+    [HttpGet("/accounts/{iban}/transactions")]
+    public IActionResult GetTransactions(string iban)
+    {
+        var transactions = _completedTransactions
+            .Where(t => t.IsCompleted && (t.DebtorAccount == iban || t.CreditorAccount == iban))
+            .Select(t => new TransactionRespone(
+                        t.PaymentId.ToString(),
+                        t.DebtorAccount,
+                        t.CreditorAccount,
+                        t.InstructedAmount,
+                        t.Currency
+                        ))
+            .ToList();
+
+        return transactions.Count > 0 ? Ok(transactions) : NoContent();
+    }
 }

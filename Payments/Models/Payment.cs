@@ -1,6 +1,6 @@
 public class Payment
 {
-    public Guid PaymentId { get; }
+    public required Guid PaymentId { get; set; }
     // regex?
     public required string DebtorAccount { get; set; } 
     // regex?
