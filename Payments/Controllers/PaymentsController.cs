@@ -30,9 +30,10 @@ public class PaymentsController : ControllerBase
             if (_processingClients.TryGetValue(clientId, out var startTime) && (DateTime.UtcNow - startTime).TotalSeconds < 2)
                 return Conflict("A payment is already in process for this client.");
 
-            var amount = decimal.Parse(request.InstructedAmount, CultureInfo.InvariantCulture);
-            var paymentId = Guid.NewGuid();
             _processingClients[clientId] = DateTime.UtcNow;
+
+            var paymentId = Guid.NewGuid();
+            var amount = decimal.Parse(request.InstructedAmount, CultureInfo.InvariantCulture);
 
             _ = Task.Run(async () =>
             {
@@ -67,13 +68,14 @@ public class PaymentsController : ControllerBase
     {
         var transactions = _completedTransactions
             .Where(t => t.IsCompleted && (t.DebtorAccount == iban || t.CreditorAccount == iban))
-            .Select(t => new TransactionRespone(
-                        t.PaymentId.ToString(),
-                        t.DebtorAccount,
-                        t.CreditorAccount,
-                        t.InstructedAmount,
-                        t.Currency
-                        ))
+            .Select(t => new TransactionRespone
+            {
+                PaymentId = t.PaymentId.ToString(),
+                DebtorAccount = t.DebtorAccount,
+                CreditorAccount = t.CreditorAccount,
+                TransactionAmount = t.InstructedAmount,
+                Currency = t.Currency
+            })
             .ToList();
 
         return transactions.Count > 0 ? Ok(transactions) : NoContent();
@@ -82,7 +84,6 @@ public class PaymentsController : ControllerBase
 
     private IActionResult? ValidateRequest(PaymentRequest request)
     {
-        // IBAN Validation
         const string ibanPattern = @"^[A-Za-z0-9]{1,34}$";
         if (string.IsNullOrEmpty(request.DebtorAccount) || !Regex.IsMatch(request.DebtorAccount, ibanPattern))
             return BadRequest("Debtor Account IBAN must be 1-34 alphanumeric characters");
@@ -90,14 +91,13 @@ public class PaymentsController : ControllerBase
         if (string.IsNullOrEmpty(request.CreditorAccount) || !Regex.IsMatch(request.CreditorAccount, ibanPattern))
             return BadRequest("Creditor Account IBAN must be 1-34 alphanumeric characters");
 
-        // ISO 4217 Alpha 3 Validation
         const string currencyPattern = @"^[A-Z]{3}$";
         if (string.IsNullOrEmpty(request.Currency) || !Regex.IsMatch(request.Currency, currencyPattern))
             return BadRequest("Currency must be a 3-letter ISO 4217 code (e.g., USD, EUR)");
 
 
         const string amountPattern = @"^-?[0-9]{1,14}(\.[0-9]{1,3})?$";
-        if (string.IsNullOrEmpty(request.InstructedAmount) || 
+        if (string.IsNullOrEmpty(request.InstructedAmount) ||
             !Regex.IsMatch(request.InstructedAmount, amountPattern))
         {
             return BadRequest("Instructed Amount must match pattern -?[0-9]{1,14}(.[0-9]{1,3})?");

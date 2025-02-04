@@ -1,4 +1,4 @@
-public class PaymentTransaction
+public record PaymentTransaction
 {
     public required Guid PaymentId { get; set; }
     public required string DebtorAccount { get; set; } 

@@ -130,8 +130,8 @@ public class PaymentsControllerTests : IClassFixture<WebApplicationFactory<Progr
     [Fact]
     public async Task GetTransactions_ReturnsTransactions()
     {
-
-        var iban ="SE0123456789";
+        // Passes when run individually
+        var iban ="NO0123456789";
         var request = new PaymentRequest
         {
             DebtorAccount = "DE0123456789",
@@ -161,7 +161,7 @@ public class PaymentsControllerTests : IClassFixture<WebApplicationFactory<Progr
         Assert.Single(transactions);
 
         Assert.Equal(request.DebtorAccount, transactions.First().DebtorAccount);
-        Assert.Equal(request.InstructedAmount, transactions.First().TransactionAmount);
+        Assert.Equal(decimal.Parse(request.InstructedAmount), transactions.First().TransactionAmount);
     }
 
     [Fact]

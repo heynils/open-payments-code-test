@@ -1,8 +1,8 @@
-public record TransactionRespone(
-        string PaymentId,
-        string DebtorAccount,
-        string CreditorAccount,
-        decimal TransactionAmount,
-        string Currency
-);
-
+public record TransactionRespone
+{
+    public required string PaymentId { get; set; }
+    public required string DebtorAccount { get; set; }
+    public required string CreditorAccount { get; set; }
+    public required decimal TransactionAmount { get; set; }
+    public required string Currency { get; set; }
+}
