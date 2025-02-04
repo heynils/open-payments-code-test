@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,6 +30,7 @@ public class PaymentsController : ControllerBase
             if (_processingClients.TryGetValue(clientId, out var startTime) && (DateTime.UtcNow - startTime).TotalSeconds < 2)
                 return Conflict("A payment is already in process for this client.");
 
+            var amount = decimal.Parse(request.InstructedAmount, CultureInfo.InvariantCulture);
             var paymentId = Guid.NewGuid();
             _processingClients[clientId] = DateTime.UtcNow;
 
@@ -41,7 +43,7 @@ public class PaymentsController : ControllerBase
                     PaymentId = paymentId,
                     DebtorAccount = request.DebtorAccount,
                     CreditorAccount = request.CreditorAccount,
-                    InstructedAmount = request.InstructedAmount,
+                    InstructedAmount = amount,
                     Currency = request.Currency,
                     InitiatedAt = DateTime.UtcNow,
                 });
@@ -49,6 +51,10 @@ public class PaymentsController : ControllerBase
 
             return Created("/payments", paymentId);
 
+        }
+        catch (FormatException)
+        {
+            return BadRequest("Invalid amount format.");
         }
         finally
         {

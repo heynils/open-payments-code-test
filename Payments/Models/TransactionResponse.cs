@@ -2,7 +2,7 @@ public record TransactionRespone(
         string PaymentId,
         string DebtorAccount,
         string CreditorAccount,
-        string TransactionAmount,
+        decimal TransactionAmount,
         string Currency
 );
 
