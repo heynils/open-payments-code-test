@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Xunit;
 
 namespace Payments.Tests;
 
@@ -126,5 +125,52 @@ public class PaymentsControllerTests : IClassFixture<WebApplicationFactory<Progr
 
         Assert.Contains(responses, r => r.StatusCode == HttpStatusCode.Created);
         Assert.Contains(responses, r => r.StatusCode == HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task GetTransactions_ReturnsTransactions()
+    {
+
+        var iban ="SE0123456789";
+        var request = new PaymentRequest
+        {
+            DebtorAccount = "DE0123456789",
+            CreditorAccount = iban,
+            InstructedAmount= "100.50",
+            Currency = "EUR"
+        };
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/payments")
+        {
+            Content = JsonContent.Create(request)
+        };
+
+        httpRequest.Headers.Add("Client-ID", "Client-ID-1");
+
+        _ = await _client.SendAsync(httpRequest);
+
+        await Task.Delay(TimeSpan.FromSeconds(4));
+
+        var response = await _client.GetAsync($"/accounts/{iban}/transactions");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var transactions = await response.Content.ReadFromJsonAsync<List<TransactionRespone>>();
+
+        Assert.NotNull(transactions);
+        Assert.Single(transactions);
+
+        Assert.Equal(request.DebtorAccount, transactions.First().DebtorAccount);
+        Assert.Equal(request.InstructedAmount, transactions.First().TransactionAmount);
+    }
+
+    [Fact]
+    public async Task GetTransactions_ReturnsNoContent()
+    {
+        var iban ="FI0123456789";
+
+        var response = await _client.GetAsync($"/accounts/{iban}/transactions");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 }
