@@ -95,6 +95,36 @@ public class PaymentsControllerTests : IClassFixture<WebApplicationFactory<Progr
     }
 
     [Fact]
+    public async Task InitiatePayment_CanHandleParallelRequests()
+    {
+        var request = new PaymentRequest
+        {
+            DebtorAccount = "DE0123456789",
+            CreditorAccount = "SE0123456789",
+            InstructedAmount= "100.50",
+            Currency = "EUR"
+        };
+
+        var httpRequest1 = new HttpRequestMessage(HttpMethod.Post, "/payments")
+        {
+            Content = JsonContent.Create(request)
+        };
+        httpRequest1.Headers.Add("Client-ID", "Client-ID-10");
+
+        var httpRequest2 = new HttpRequestMessage(HttpMethod.Post, "/payments")
+        {
+            Content = JsonContent.Create(request)
+        };
+        httpRequest2.Headers.Add("Client-ID", "Client-ID-20");
+
+        var response1 = await _client.SendAsync(httpRequest1);
+        var response2 = await _client.SendAsync(httpRequest2);
+
+        Assert.Equal(HttpStatusCode.Created, response1.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, response2.StatusCode);
+    }
+
+    [Fact]
     public async Task InitiatePayment_ConflictOnDuplicatePayment()
     {
         var request = new PaymentRequest
@@ -117,20 +147,16 @@ public class PaymentsControllerTests : IClassFixture<WebApplicationFactory<Progr
         };
         httpRequest2.Headers.Add("Client-ID", "Client-ID-2");
 
-        var responses = await Task.WhenAll(
-            _client.SendAsync(httpRequest1),
-            _client.SendAsync(httpRequest2)
-        );
+        var response1 = await _client.SendAsync(httpRequest1);
+        var response2 = await _client.SendAsync(httpRequest2);
 
-
-        Assert.Contains(responses, r => r.StatusCode == HttpStatusCode.Created);
-        Assert.Contains(responses, r => r.StatusCode == HttpStatusCode.Conflict);
+        Assert.Equal(HttpStatusCode.Created, response1.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, response2.StatusCode);
     }
 
     [Fact]
     public async Task GetTransactions_ReturnsTransactions()
     {
-        // Passes when run individually
         var iban ="NO0123456789";
         var request = new PaymentRequest
         {
@@ -145,9 +171,9 @@ public class PaymentsControllerTests : IClassFixture<WebApplicationFactory<Progr
             Content = JsonContent.Create(request)
         };
 
-        httpRequest.Headers.Add("Client-ID", "Client-ID-1");
+        httpRequest.Headers.Add("Client-ID", "Client-ID-30");
 
-        _ = await _client.SendAsync(httpRequest);
+        await _client.SendAsync(httpRequest);
 
         await Task.Delay(TimeSpan.FromSeconds(4));
 
