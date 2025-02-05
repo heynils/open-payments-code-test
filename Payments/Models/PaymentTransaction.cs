@@ -1,10 +1,10 @@
 public record PaymentTransaction
 {
-    public required Guid PaymentId { get; set; }
-    public required string DebtorAccount { get; set; } 
-    public required string CreditorAccount { get; set; } 
-    public required decimal InstructedAmount { get; set; } 
-    public required string Currency { get; set; }
-    public required DateTime InitiatedAt { get; set; }
+    public required Guid PaymentId { get; init; }
+    public required string DebtorAccount { get; init; }
+    public required string CreditorAccount { get; init; }
+    public required decimal InstructedAmount { get; init; }
+    public required string Currency { get; init; }
+    public required DateTime InitiatedAt { get; init; }
     public bool IsCompleted => DateTime.UtcNow >= InitiatedAt.AddSeconds(2);
 }

@@ -1,7 +1,7 @@
 public record PaymentRequest
 {
-    public required string DebtorAccount { get; set; }
-    public required string CreditorAccount { get; set; }
-    public required string InstructedAmount { get; set; }
-    public required string Currency { get; set; }
+    public required string DebtorAccount { get; init; }
+    public required string CreditorAccount { get; init; }
+    public required string InstructedAmount { get; init; }
+    public required string Currency { get; init; }
 }
