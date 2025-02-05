@@ -63,25 +63,6 @@ public class PaymentsController : ControllerBase
         }
     }
 
-    [HttpGet("/accounts/{iban}/transactions")]
-    public IActionResult GetTransactions(string iban)
-    {
-        var transactions = _completedTransactions
-            .Where(t => t.IsCompleted && (t.DebtorAccount == iban || t.CreditorAccount == iban))
-            .Select(t => new TransactionRespone
-            {
-                PaymentId = t.PaymentId.ToString(),
-                DebtorAccount = t.DebtorAccount,
-                CreditorAccount = t.CreditorAccount,
-                TransactionAmount = t.InstructedAmount,
-                Currency = t.Currency
-            })
-            .ToList();
-
-        return transactions.Count > 0 ? Ok(transactions) : NoContent();
-    }
-
-
     private IActionResult? ValidateRequest(PaymentRequest request)
     {
         const string ibanPattern = @"^[A-Za-z0-9]{1,34}$";
@@ -104,5 +85,23 @@ public class PaymentsController : ControllerBase
         }
 
         return null;
+    }
+
+    [HttpGet("/accounts/{iban}/transactions")]
+    public IActionResult GetTransactions(string iban)
+    {
+        var transactions = _completedTransactions
+            .Where(t => t.IsCompleted && (t.DebtorAccount == iban || t.CreditorAccount == iban))
+            .Select(t => new TransactionRespone
+            {
+                PaymentId = t.PaymentId.ToString(),
+                DebtorAccount = t.DebtorAccount,
+                CreditorAccount = t.CreditorAccount,
+                TransactionAmount = t.InstructedAmount,
+                Currency = t.Currency
+            })
+            .ToList();
+
+        return transactions.Any() ? Ok(transactions) : NoContent();
     }
 }
