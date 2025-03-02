@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 public interface ITransactionRepository
 {
     public ConcurrentBag<PaymentTransaction> GetTransactions();
+    public void AddTransaction(PaymentTransaction transaction);
 }
 
 public class TransactionRepository : ITransactionRepository
@@ -14,8 +15,13 @@ public class TransactionRepository : ITransactionRepository
         _completedTransactions = new();
     }
 
-    ConcurrentBag<PaymentTransaction> ITransactionRepository.GetTransactions()
+    public ConcurrentBag<PaymentTransaction> GetTransactions()
     {
         return _completedTransactions;
+    }
+
+    public void AddTransaction(PaymentTransaction transaction)
+    {
+        _completedTransactions.Add(transaction);
     }
 }

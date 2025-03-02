@@ -56,7 +56,7 @@ public class TransactionWriteService : ITransactionWriteService
             {
                 await Task.Delay(TimeSpan.FromSeconds(2));
                 _processingClients.TryRemove(clientId, out _);
-                _repository.GetTransactions().Add(new PaymentTransaction
+                _repository.AddTransaction(new PaymentTransaction
                 {
                     PaymentId = paymentId,
                     DebtorAccount = paymentRequest.DebtorAccount,
