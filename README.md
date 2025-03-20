@@ -1,5 +1,5 @@
 # Open payments code test
 
-A small program that smiluates a multithreaded payment API.
+A small program that simulates a multithreaded payment API.
 
 
